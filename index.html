@@ -1,1 +1,1329 @@
+<!doctype html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Brighter Future — Sunrise Run (Hero Edition)</title>
+  <style>
+    :root{
+      --bg:#0e1217;
+      --card:#121821;
+      --card2:#0f151d;
+      --text:#e9eef5;
+      --muted:#aab6c5;
+      --sun:#d69b4f;
+      --sun2:#f2c26b;
+      --danger:#ff5a6b;
+      --good:#3ddc97;
+      --line: rgba(255,255,255,.09);
+      --shadow: 0 18px 40px rgba(0,0,0,.45);
+      --radius: 22px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      color:var(--text);
+      background: radial-gradient(1200px 800px at 50% -10%, rgba(214,155,79,.20), transparent 60%),
+                  radial-gradient(900px 600px at 10% 10%, rgba(62,122,255,.10), transparent 55%),
+                  linear-gradient(180deg, #0b0f14 0%, #0e1217 70%, #0a0e13 100%);
+      min-height:100vh;
+      display:flex;
+      justify-content:center;
+      padding: 16px 14px 26px;
+    }
+    .app{
+      width:min(980px, 100%);
+      display:grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+    }
+    header{
+      background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 14px 16px;
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:12px;
+    }
+    .brand h1{
+      font-size: 18px;
+      margin:0;
+      letter-spacing:.2px;
+    }
+    .brand p{
+      margin:4px 0 0;
+      color:var(--muted);
+      font-size: 12.5px;
+      line-height:1.25;
+    }
+    .pillrow{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      justify-content:flex-end;
+      align-items:center;
+    }
+    .pill{
+      background: rgba(255,255,255,.045);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 7px 10px;
+      font-size: 12.5px;
+      color: var(--text);
+      white-space:nowrap;
+    }
+    .pill b{color:var(--sun2)}
+    .grid{
+      display:grid;
+      grid-template-columns: 1.25fr .75fr;
+      gap: 14px;
+    }
+    @media (max-width: 920px){
+      .grid{grid-template-columns: 1fr}
+    }
+    .panel{
+      background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+      position:relative;
+    }
+    .panel-inner{
+      padding: 12px;
+    }
 
+    /* Canvas card */
+    .gameWrap{
+      padding: 12px;
+    }
+    canvas{
+      width:100%;
+      height:auto;
+      border-radius: 18px;
+      background: linear-gradient(180deg, #0d1218 0%, #0b0f14 55%, #070a0e 100%);
+      border: 1px solid rgba(255,255,255,.06);
+      display:block;
+      touch-action: none;
+    }
+
+    /* HUD overlay */
+    .hud{
+      position:absolute;
+      left: 12px;
+      right: 12px;
+      top: 12px;
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:10px;
+      pointer-events:none;
+    }
+    .hud-left, .hud-right{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+    .hudcard{
+      pointer-events:none;
+      background: rgba(10,14,20,.55);
+      border: 1px solid rgba(255,255,255,.10);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-radius: 14px;
+      padding: 8px 10px;
+      min-width: 150px;
+    }
+    .hudcard .t{
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom:2px;
+    }
+    .hudcard .v{
+      font-size: 16px;
+      font-weight: 800;
+      letter-spacing:.2px;
+    }
+    .hudcard .v b{color:var(--sun2)}
+    .mini{
+      display:flex; gap:8px; flex-wrap:wrap;
+      margin-top:6px;
+      font-size:12px;
+      color:var(--muted);
+    }
+    .tag{
+      border:1px solid rgba(255,255,255,.10);
+      padding:4px 8px;
+      border-radius:999px;
+      background: rgba(255,255,255,.04);
+    }
+
+    /* Ability button */
+    .abilityBtn{
+      pointer-events:auto;
+      position:absolute;
+      right: 18px;
+      bottom: 18px;
+      width: 74px;
+      height: 74px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.15);
+      background: rgba(10,14,20,.45);
+      box-shadow: 0 14px 30px rgba(0,0,0,.45);
+      display:grid;
+      place-items:center;
+      cursor:pointer;
+      user-select:none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .abilityBtn:active{transform: scale(.98)}
+    .abilityInner{
+      width: 58px; height:58px; border-radius:999px;
+      background: radial-gradient(circle at 35% 30%, rgba(242,194,107,.95), rgba(214,155,79,.55) 55%, rgba(214,155,79,.18) 75%, rgba(255,255,255,.02) 100%);
+      display:grid; place-items:center;
+      border: 1px solid rgba(255,255,255,.18);
+      position:relative;
+      overflow:hidden;
+    }
+    .abilityInner span{
+      font-weight: 900;
+      letter-spacing:.5px;
+      color:#1a1207;
+      text-shadow: 0 1px 0 rgba(255,255,255,.35);
+      font-size: 12px;
+    }
+    .ring{
+      position:absolute; inset:-6px;
+      border-radius:999px;
+      background: conic-gradient(var(--sun2) var(--p,0%), rgba(255,255,255,.08) 0);
+      filter: drop-shadow(0 8px 16px rgba(242,194,107,.18));
+      -webkit-mask: radial-gradient(circle, transparent 61%, #000 62%);
+              mask: radial-gradient(circle, transparent 61%, #000 62%);
+      opacity:.95;
+    }
+    .readyGlow{
+      box-shadow: 0 0 0 0 rgba(242,194,107,.0);
+      animation: none;
+    }
+    .abilityBtn.ready .abilityInner{
+      animation: pulse 1.0s ease-in-out infinite;
+    }
+    @keyframes pulse{
+      0%{filter: brightness(1) saturate(1)}
+      50%{filter: brightness(1.15) saturate(1.1)}
+      100%{filter: brightness(1) saturate(1)}
+    }
+
+    /* Controls / Side panel */
+    .controls h2{
+      margin:0 0 8px;
+      font-size: 14px;
+      letter-spacing:.3px;
+      color: var(--sun2);
+    }
+    .controls p{
+      margin: 0 0 10px;
+      color: var(--muted);
+      font-size: 12.5px;
+      line-height:1.35;
+    }
+    .btnrow{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:10px;
+    }
+    button{
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.05);
+      color: var(--text);
+      padding: 10px 12px;
+      border-radius: 14px;
+      font-weight: 800;
+      cursor:pointer;
+      box-shadow: 0 10px 22px rgba(0,0,0,.25);
+    }
+    button.primary{
+      background: linear-gradient(180deg, rgba(242,194,107,.22), rgba(214,155,79,.14));
+      border-color: rgba(242,194,107,.28);
+      color: #fff;
+    }
+    button.danger{
+      background: rgba(255,90,107,.12);
+      border-color: rgba(255,90,107,.24);
+    }
+    button:active{transform: scale(.99)}
+    .divider{
+      height:1px;
+      background: rgba(255,255,255,.08);
+      margin: 12px 0;
+    }
+
+    /* Modal */
+    .modal{
+      position:fixed;
+      inset:0;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding: 16px;
+      background: rgba(0,0,0,.6);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 50;
+    }
+    .modal.show{display:flex}
+    .modalCard{
+      width: min(820px, 100%);
+      border-radius: 22px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: linear-gradient(180deg, rgba(18,24,33,.95), rgba(10,14,20,.92));
+      box-shadow: 0 30px 80px rgba(0,0,0,.55);
+      overflow:hidden;
+    }
+    .modalTop{
+      padding: 14px 16px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+    }
+    .modalTop h3{
+      margin:0;
+      font-size: 14px;
+      letter-spacing:.25px;
+      color: var(--sun2);
+    }
+    .close{
+      border-radius: 12px;
+      padding: 8px 10px;
+      font-weight:900;
+    }
+    .modalBody{
+      padding: 14px 16px 16px;
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+    @media (max-width: 760px){
+      .modalBody{grid-template-columns: 1fr}
+    }
+    .heroCard{
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.03);
+      padding: 14px;
+    }
+    .heroCard h4{
+      margin:0 0 6px;
+      font-size: 18px;
+      letter-spacing:.2px;
+    }
+    .heroCard p{
+      margin:0 0 10px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height:1.35;
+    }
+    .heroMeta{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      margin-bottom:12px;
+    }
+    .heroMeta .tag{font-size:12px}
+    .selectBtn{
+      width:100%;
+      padding: 12px 14px;
+      border-radius: 16px;
+      font-size: 14px;
+      font-weight: 900;
+    }
+    .smallnote{
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div class="brand">
+        <h1>Brighter Future — Sunrise Run <span style="opacity:.75;">(Hero Edition)</span></h1>
+        <p>Hoppa • Dubbelhopp • Slide • Samla sol • Tajma din ability • Bygg streak • Tjäna BF Coins</p>
+      </div>
+      <div class="pillrow">
+        <div class="pill">Poäng: <b id="scorePill">0</b></div>
+        <div class="pill">BF Coins: <b id="coinsPill">0</b></div>
+        <div class="pill">Streak: <b id="streakPill">0</b></div>
+        <div class="pill">Bäst: <b id="bestPill">0</b></div>
+      </div>
+    </header>
+
+    <div class="grid">
+      <section class="panel gameWrap">
+        <div class="hud">
+          <div class="hud-left">
+            <div class="hudcard">
+              <div class="t">Hjälte</div>
+              <div class="v"><span id="heroName">—</span></div>
+              <div class="mini">
+                <span class="tag" id="heroAbilityTag">Ability: —</span>
+                <span class="tag" id="heroChargeTag">Laddning: —</span>
+              </div>
+            </div>
+          </div>
+          <div class="hud-right">
+            <div class="hudcard">
+              <div class="t">Run</div>
+              <div class="v">Poäng: <b id="scoreHud">0</b></div>
+              <div class="mini">
+                <span class="tag">Speed: <span id="speedHud">1.0</span>x</span>
+                <span class="tag">Combo: <span id="comboHud">1.0</span>x</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <canvas id="c" width="1200" height="520"></canvas>
+
+        <div class="abilityBtn" id="abilityBtn" aria-label="Ability">
+          <div class="ring" id="ring"></div>
+          <div class="abilityInner">
+            <span id="abilityLabel">SKILL</span>
+          </div>
+        </div>
+      </section>
+
+      <aside class="panel">
+        <div class="panel-inner controls">
+          <h2>Kontroller</h2>
+          <p><b>Mobil:</b> Tryck för hopp • <b>Dubbelhopp</b> igen i luften • Svep ned för <b>slide</b> • Ability-knapp nere till höger.<br>
+             <b>Dator:</b> Space = hopp/dubbelhopp • ↓ = slide • X = ability • P = paus.</p>
+
+          <div class="btnrow">
+            <button class="primary" id="startBtn">Starta</button>
+            <button id="pauseBtn">Pausa</button>
+            <button class="danger" id="resetBtn">Nollställ</button>
+          </div>
+
+          <div class="divider"></div>
+
+          <h2>Så blir det beroendeframkallande</h2>
+          <p>
+            • Coins + streak bygger “bara en till”-känslan<br>
+            • Ability ger tajming & skicklighet<br>
+            • Slumpade hinder + speed ramp = alltid nytt<br>
+            • Combo multiplikator belönar flyt
+          </p>
+
+          <div class="divider"></div>
+
+          <h2>Status</h2>
+          <p class="smallnote" id="statusText">Välj hjälte för att börja.</p>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- Hero Select Modal -->
+  <div class="modal show" id="heroModal">
+    <div class="modalCard">
+      <div class="modalTop">
+        <h3>Välj din hjälte</h3>
+        <button class="close" id="closeModal">Stäng</button>
+      </div>
+      <div class="modalBody">
+        <div class="heroCard">
+          <h4>Momentum</h4>
+          <p>Bygger fart och flow. Laddas av sol + combos. Perfekt för den som vill jaga rekord.</p>
+          <div class="heroMeta">
+            <span class="tag">Aktiv: Boost</span>
+            <span class="tag">3 sek</span>
+            <span class="tag">2× coins</span>
+            <span class="tag">Immun</span>
+          </div>
+          <button class="primary selectBtn" data-hero="momentum">Välj Momentum</button>
+          <div class="smallnote">Laddning: sol + combo.</div>
+        </div>
+
+        <div class="heroCard">
+          <h4>Guardian</h4>
+          <p>Stabil och taktisk. Laddas av överlevnadstid. Perfekt för den som vill kontrollera kaoset.</p>
+          <div class="heroMeta">
+            <span class="tag">Aktiv: Slow</span>
+            <span class="tag">2.5 sek</span>
+            <span class="tag">Rensar hinder</span>
+            <span class="tag">Säkrare</span>
+          </div>
+          <button class="primary selectBtn" data-hero="guardian">Välj Guardian</button>
+          <div class="smallnote">Laddning: tid i run.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+(() => {
+  // ===== Helpers =====
+  const clamp = (v,min,max)=>Math.max(min, Math.min(max,v));
+  const lerp = (a,b,t)=>a+(b-a)*t;
+  const rand = (a,b)=>a+Math.random()*(b-a);
+  const now = ()=>performance.now();
+
+  // ===== DOM =====
+  const canvas = document.getElementById('c');
+  const ctx = canvas.getContext('2d');
+
+  const heroModal = document.getElementById('heroModal');
+  const closeModal = document.getElementById('closeModal');
+  const statusText = document.getElementById('statusText');
+
+  const scorePill = document.getElementById('scorePill');
+  const coinsPill = document.getElementById('coinsPill');
+  const streakPill = document.getElementById('streakPill');
+  const bestPill = document.getElementById('bestPill');
+
+  const scoreHud = document.getElementById('scoreHud');
+  const speedHud = document.getElementById('speedHud');
+  const comboHud = document.getElementById('comboHud');
+
+  const heroName = document.getElementById('heroName');
+  const heroAbilityTag = document.getElementById('heroAbilityTag');
+  const heroChargeTag = document.getElementById('heroChargeTag');
+
+  const abilityBtn = document.getElementById('abilityBtn');
+  const ring = document.getElementById('ring');
+  const abilityLabel = document.getElementById('abilityLabel');
+
+  const startBtn = document.getElementById('startBtn');
+  const pauseBtn = document.getElementById('pauseBtn');
+  const resetBtn = document.getElementById('resetBtn');
+
+  // ===== Game State =====
+  let W=canvas.width, H=canvas.height;
+
+  const state = {
+    running:false,
+    paused:false,
+    tLast: 0,
+    t: 0,
+    dt: 0,
+    shake: 0,
+    cameraY: 0,
+
+    score:0,
+    best:0,
+    coins:0,
+    streak:0,
+    combo:1.0,
+
+    speed: 420, // px/s
+    speedMult: 1.0,
+
+    hero: null, // "momentum" or "guardian"
+    ability: {
+      charge: 0, // 0..1
+      ready: false,
+      active: false,
+      tEnd: 0
+    },
+
+    // world
+    groundY: 420,
+    scrollX: 0,
+
+    // entities
+    player: {
+      x: 220,
+      y: 0,
+      w: 44,
+      h: 74,
+      vy: 0,
+      onGround: true,
+      jumpsLeft: 2,
+      sliding:false,
+      slideT: 0,
+      invulnT: 0
+    },
+
+    obstacles: [],
+    suns: [],
+    particles: [],
+    stars: []
+  };
+
+  const HERO = {
+    momentum: {
+      name:"Momentum",
+      abilityName:"BOOST",
+      chargeHint:"sol + combo",
+      ability: {
+        duration: 3000,
+        apply(){
+          state.speedMult = 1.35;
+          state.player.invulnT = Math.max(state.player.invulnT, 3000);
+          // coin multiplier handled in pickup
+        },
+        clear(){
+          state.speedMult = 1.0;
+        }
+      }
+    },
+    guardian: {
+      name:"Guardian",
+      abilityName:"SLOW",
+      chargeHint:"tid i run",
+      ability: {
+        duration: 2500,
+        apply(){
+          state.speedMult = 0.70;
+          // clear nearby obstacles
+          const px = state.player.x;
+          state.obstacles = state.obstacles.filter(o => o.x > px + 260);
+          // little burst
+          burst(px+40, state.player.y+30, 24, 0.9);
+          state.player.invulnT = Math.max(state.player.invulnT, 900);
+        },
+        clear(){
+          state.speedMult = 1.0;
+        }
+      }
+    }
+  };
+
+  // ===== Resize for crisp canvas (keep fixed internal size) =====
+  function fit(){
+    // keep internal size constant, canvas scales with CSS
+    // could adapt for small screens, but fixed works fine
+  }
+
+  // ===== Init background stars =====
+  function initSky(){
+    state.stars = [];
+    for(let i=0;i<60;i++){
+      state.stars.push({
+        x: Math.random()*W,
+        y: Math.random()*H*0.55,
+        r: rand(0.8, 2.2),
+        a: rand(0.10, 0.40),
+        s: rand(0.08, 0.25)
+      });
+    }
+  }
+
+  // ===== Particles =====
+  function addParticle(x,y,vx,vy,life,sz,alpha,col){
+    state.particles.push({x,y,vx,vy,life,life0:life,sz,alpha,col});
+  }
+  function burst(x,y,n=18, power=1){
+    for(let i=0;i<n;i++){
+      const a = rand(0, Math.PI*2);
+      const sp = rand(90, 380)*power;
+      addParticle(x,y, Math.cos(a)*sp, Math.sin(a)*sp, rand(260,620), rand(2,5), rand(0.25,0.7), 'sun');
+    }
+  }
+
+  // ===== Spawning =====
+  let nextObstacleIn = 650;
+  let nextSunIn = 520;
+
+  function resetRun(keepTotals=true){
+    state.running = false;
+    state.paused = false;
+    state.score = 0;
+    state.streak = 0;
+    state.combo = 1.0;
+    state.speed = 420;
+    state.speedMult = 1.0;
+
+    state.player.y = state.groundY - state.player.h;
+    state.player.vy = 0;
+    state.player.onGround = true;
+    state.player.jumpsLeft = 2;
+    state.player.sliding = false;
+    state.player.slideT = 0;
+    state.player.invulnT = 0;
+
+    state.obstacles = [];
+    state.suns = [];
+    state.particles = [];
+
+    state.ability.charge = 0;
+    state.ability.ready = false;
+    state.ability.active = false;
+    state.ability.tEnd = 0;
+
+    nextObstacleIn = 520;
+    nextSunIn = 420;
+
+    if(!keepTotals){
+      state.coins = 0;
+      state.best = 0;
+    }
+
+    statusText.textContent = state.hero ? "Redo. Tryck Starta eller hoppa för att börja." : "Välj hjälte för att börja.";
+    updateUI();
+  }
+
+  function spawnObstacle(){
+    const typeRoll = Math.random();
+    const baseX = W + 60;
+    let o;
+
+    // Types: ground block, tall, flying, low (requires jump), high (requires slide)
+    if(typeRoll < 0.45){
+      o = {type:'ground', x:baseX, y:state.groundY-48, w:46, h:48};
+    } else if(typeRoll < 0.70){
+      o = {type:'tall', x:baseX, y:state.groundY-78, w:52, h:78};
+    } else if(typeRoll < 0.86){
+      // flying
+      o = {type:'fly', x:baseX, y:state.groundY-150, w:48, h:42};
+    } else {
+      // low bar forces slide
+      o = {type:'bar', x:baseX, y:state.groundY-105, w:66, h:22};
+    }
+
+    // occasionally double obstacle
+    if(Math.random() < 0.16 && state.score > 120){
+      const gap = rand(120, 190);
+      state.obstacles.push(o);
+      const o2 = {...o, x: baseX + gap};
+      state.obstacles.push(o2);
+      return;
+    }
+
+    state.obstacles.push(o);
+  }
+
+  function spawnSun(){
+    const baseX = W + 30;
+    const band = rand(0.0, 1.0);
+    const y = lerp(state.groundY-220, state.groundY-110, band);
+    state.suns.push({x:baseX, y, r:12, taken:false});
+  }
+
+  // ===== Input =====
+  let pointerDown = false;
+  let pointerStartY = 0;
+  let pointerStartX = 0;
+  let lastTap = 0;
+
+  function jump(){
+    const p = state.player;
+    if(!state.running) start();
+    if(p.jumpsLeft <= 0) return;
+    p.vy = -620;
+    p.onGround = false;
+    p.jumpsLeft--;
+    burst(p.x+22, p.y+p.h, 10, 0.55);
+  }
+
+  function slide(){
+    const p = state.player;
+    if(!state.running) start();
+    if(p.onGround && !p.sliding){
+      p.sliding = true;
+      p.slideT = 340; // ms
+      burst(p.x+18, p.y+p.h-8, 10, 0.55);
+    }
+  }
+
+  function useAbility(){
+    if(!state.hero) return;
+    if(!state.ability.ready || state.ability.active) return;
+
+    state.ability.active = true;
+    state.ability.ready = false;
+    state.ability.charge = 0;
+    const h = HERO[state.hero];
+    state.ability.tEnd = now() + h.ability.duration;
+
+    // apply ability effects
+    h.ability.apply();
+    state.shake = 10;
+
+    // visual burst
+    burst(state.player.x+30, state.player.y+30, 22, 1.0);
+
+    statusText.textContent = `${h.name}: ${h.abilityName} aktiverad!`;
+    updateUI();
+  }
+
+  // Canvas touch
+  canvas.addEventListener('pointerdown', (e)=>{
+    pointerDown = true;
+    pointerStartY = e.clientY;
+    pointerStartX = e.clientX;
+
+    // double tap = ability (optional)
+    const t = Date.now();
+    if(t - lastTap < 260){
+      useAbility();
+    }
+    lastTap = t;
+
+    // tap jump
+    jump();
+  }, {passive:true});
+
+  canvas.addEventListener('pointermove', (e)=>{
+    if(!pointerDown) return;
+    const dy = e.clientY - pointerStartY;
+    if(dy > 30){
+      slide();
+      pointerDown = false;
+    }
+  }, {passive:true});
+
+  canvas.addEventListener('pointerup', ()=>{ pointerDown=false; }, {passive:true});
+  canvas.addEventListener('pointercancel', ()=>{ pointerDown=false; }, {passive:true});
+
+  abilityBtn.addEventListener('click', useAbility);
+
+  // Keyboard
+  window.addEventListener('keydown', (e)=>{
+    if(e.code === 'Space'){ e.preventDefault(); jump(); }
+    if(e.code === 'ArrowDown'){ slide(); }
+    if(e.code === 'KeyX'){ useAbility(); }
+    if(e.code === 'KeyP'){ togglePause(); }
+  });
+
+  // Buttons
+  startBtn.addEventListener('click', ()=> start());
+  pauseBtn.addEventListener('click', ()=> togglePause());
+  resetBtn.addEventListener('click', ()=> { resetRun(false); heroModal.classList.add('show'); });
+
+  // Hero select
+  document.querySelectorAll('.selectBtn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      state.hero = btn.dataset.hero;
+      heroModal.classList.remove('show');
+      applyHeroUI();
+      resetRun(true);
+    });
+  });
+  closeModal.addEventListener('click', ()=> heroModal.classList.remove('show'));
+
+  function applyHeroUI(){
+    const h = HERO[state.hero];
+    heroName.textContent = h.name;
+    heroAbilityTag.textContent = `Ability: ${h.abilityName}`;
+    heroChargeTag.textContent = `Laddning: ${h.chargeHint}`;
+    abilityLabel.textContent = h.abilityName;
+    statusText.textContent = "Redo. Tryck Starta eller hoppa för att börja.";
+  }
+
+  // ===== Run control =====
+  function start(){
+    if(!state.hero){
+      heroModal.classList.add('show');
+      return;
+    }
+    if(state.running) return;
+    state.running = true;
+    state.paused = false;
+    state.tLast = now();
+    statusText.textContent = "Kör! Bygg streak, tajma slide och använd din ability smart.";
+  }
+  function togglePause(){
+    if(!state.running) return;
+    state.paused = !state.paused;
+    pauseBtn.textContent = state.paused ? "Fortsätt" : "Pausa";
+    if(!state.paused) state.tLast = now();
+    statusText.textContent = state.paused ? "Pausad." : "Tillbaka!";
+  }
+
+  // ===== Economy / scoring =====
+  function addCoins(n){
+    state.coins += n;
+  }
+
+  // ===== Collision =====
+  function aabb(ax,ay,aw,ah,bx,by,bw,bh){
+    return ax < bx+bw && ax+aw > bx && ay < by+bh && ay+ah > by;
+  }
+
+  function hit(){
+    const p = state.player;
+    if(p.invulnT > 0) return;
+
+    state.shake = 16;
+    state.running = false;
+
+    // score -> best
+    state.best = Math.max(state.best, Math.floor(state.score));
+    statusText.textContent = "Krasch! Tryck Starta för en ny run.";
+    updateUI();
+  }
+
+  // ===== Update loop =====
+  function update(){
+    const tNow = now();
+    state.dt = (tNow - state.tLast);
+    state.tLast = tNow;
+
+    if(state.paused){
+      draw();
+      requestAnimationFrame(update);
+      return;
+    }
+
+    const dt = clamp(state.dt, 0, 50) / 1000;
+
+    // background motion even when not running
+    state.scrollX += dt * 80;
+
+    if(state.running){
+      // speed ramp
+      const targetSpeed = 420 + Math.min(520, state.score*0.85);
+      state.speed = lerp(state.speed, targetSpeed, 0.02);
+
+      // ability timing end
+      if(state.ability.active && tNow >= state.ability.tEnd){
+        state.ability.active = false;
+        HERO[state.hero].ability.clear();
+        statusText.textContent = "Ability slut. Ladda upp igen!";
+      }
+
+      // charge ability
+      if(!state.ability.active){
+        if(state.hero === 'momentum'){
+          // charged by suns + combo; suns handled on pickup
+          // small trickle from combo
+          state.ability.charge += dt * (0.015 + (state.combo-1)*0.01);
+        } else if(state.hero === 'guardian'){
+          state.ability.charge += dt * 0.045; // time based
+        }
+        state.ability.charge = clamp(state.ability.charge, 0, 1);
+      }
+
+      // ready state
+      state.ability.ready = state.ability.charge >= 1 && !state.ability.active;
+
+      // player physics
+      const p = state.player;
+
+      // slide decay
+      if(p.sliding){
+        p.slideT -= state.dt;
+        if(p.slideT <= 0){
+          p.sliding = false;
+          p.slideT = 0;
+        }
+      }
+
+      // invuln decay
+      if(p.invulnT > 0) p.invulnT = Math.max(0, p.invulnT - state.dt);
+
+      // gravity
+      p.vy += 1700 * dt;
+      p.y += p.vy * dt;
+
+      const groundH = p.sliding ? 48 : p.h;
+      const groundY = state.groundY - groundH;
+
+      if(p.y >= groundY){
+        p.y = groundY;
+        p.vy = 0;
+        if(!p.onGround){
+          // landing
+          burst(p.x+22, p.y+groundH, 8, 0.55);
+        }
+        p.onGround = true;
+        p.jumpsLeft = 2;
+      } else {
+        p.onGround = false;
+      }
+
+      // spawn logic
+      const spd = state.speed * state.speedMult;
+
+      nextObstacleIn -= spd * dt;
+      nextSunIn -= spd * dt;
+
+      if(nextObstacleIn <= 0){
+        spawnObstacle();
+        nextObstacleIn = rand(420, 740) - Math.min(180, state.score*0.3);
+      }
+      if(nextSunIn <= 0){
+        spawnSun();
+        nextSunIn = rand(280, 560);
+      }
+
+      // move obstacles & suns
+      for(const o of state.obstacles){
+        o.x -= spd * dt;
+      }
+      for(const s of state.suns){
+        s.x -= spd * dt;
+      }
+
+      // cleanup
+      state.obstacles = state.obstacles.filter(o => o.x > -200);
+      state.suns = state.suns.filter(s => s.x > -100);
+
+      // collisions
+      const px = p.x;
+      const py = p.y;
+      const pw = p.w;
+      const ph = p.sliding ? 48 : p.h;
+
+      // obstacles
+      for(const o of state.obstacles){
+        if(aabb(px,py,pw,ph, o.x,o.y,o.w,o.h)){
+          hit();
+          break;
+        }
+      }
+
+      // suns pickup
+      for(const s of state.suns){
+        if(s.taken) continue;
+        if(aabb(px,py,pw,ph, s.x-s.r, s.y-s.r, s.r*2, s.r*2)){
+          s.taken = true;
+
+          // score + coins
+          const baseCoin = 1;
+          const coinMult = (state.hero === 'momentum' && state.ability.active) ? 2 : 1;
+          addCoins(baseCoin * coinMult);
+
+          // streak/combo
+          state.streak += 1;
+          state.combo = clamp(1 + state.streak*0.03, 1, 2.2);
+
+          // ability charge bump
+          if(state.hero === 'momentum' && !state.ability.active){
+            state.ability.charge += 0.13;
+          } else if(state.hero === 'guardian' && !state.ability.active){
+            state.ability.charge += 0.05;
+          }
+          state.ability.charge = clamp(state.ability.charge, 0, 1);
+
+          // particles
+          burst(s.x, s.y, 18, 0.85);
+        }
+      }
+      state.suns = state.suns.filter(s => !s.taken);
+
+      // score increases with speed & combo
+      state.score += dt * (spd/90) * state.combo;
+
+      // occasional streak decay if you miss suns too long
+      // (simple: reduce streak slowly)
+      state.streak = Math.max(0, state.streak - dt*0.38);
+      if(state.streak < 0.01) state.streak = 0;
+      // recalc combo based on streak (keep smooth)
+      state.combo = clamp(lerp(state.combo, 1 + state.streak*0.03, 0.04), 1, 2.2);
+
+      // camera shake
+      if(state.shake > 0) state.shake = Math.max(0, state.shake - 70*dt);
+
+      // particles update
+      for(const pt of state.particles){
+        pt.life -= state.dt;
+        pt.x += pt.vx*dt;
+        pt.y += pt.vy*dt;
+        pt.vy += 900*dt;
+      }
+      state.particles = state.particles.filter(p => p.life > 0 && p.y < H+120);
+    } else {
+      // particles drift out
+      for(const pt of state.particles){
+        pt.life -= state.dt;
+        pt.x += pt.vx*dt;
+        pt.y += pt.vy*dt;
+        pt.vy += 900*dt;
+      }
+      state.particles = state.particles.filter(p => p.life > 0 && p.y < H+120);
+    }
+
+    updateUI();
+    draw();
+    requestAnimationFrame(update);
+  }
+
+  // ===== UI =====
+  function updateUI(){
+    const s = Math.floor(state.score);
+    scorePill.textContent = s;
+    coinsPill.textContent = state.coins;
+    streakPill.textContent = Math.floor(state.streak);
+    bestPill.textContent = state.best;
+
+    scoreHud.textContent = s;
+    speedHud.textContent = (state.speedMult).toFixed(2);
+    comboHud.textContent = (state.combo).toFixed(2);
+
+    // ability ring
+    const pct = Math.floor(state.ability.charge * 100);
+    ring.style.setProperty('--p', pct + '%');
+
+    if(state.ability.ready){
+      abilityBtn.classList.add('ready');
+    } else {
+      abilityBtn.classList.remove('ready');
+    }
+  }
+
+  // ===== Draw =====
+  function draw(){
+    // shake
+    const sx = (Math.random()-0.5) * state.shake;
+    const sy = (Math.random()-0.5) * state.shake;
+
+    ctx.save();
+    ctx.clearRect(0,0,W,H);
+    ctx.translate(sx, sy);
+
+    // background gradient
+    const g = ctx.createLinearGradient(0,0,0,H);
+    g.addColorStop(0, '#0f151d');
+    g.addColorStop(0.5,'#0b0f14');
+    g.addColorStop(1, '#070a0e');
+    ctx.fillStyle = g;
+    ctx.fillRect(0,0,W,H);
+
+    // stars
+    for(const st of state.stars){
+      st.x -= st.s;
+      if(st.x < -5) st.x = W+5;
+      ctx.globalAlpha = st.a;
+      ctx.fillStyle = '#fff';
+      ctx.beginPath();
+      ctx.arc(st.x, st.y, st.r, 0, Math.PI*2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+
+    // sunrise + skyline parallax
+    drawSunrise();
+    drawSkyline(0.35, 0.22, 260, '#091018');
+    drawSkyline(0.55, 0.40, 310, '#0a121b');
+    drawSkyline(0.85, 0.70, 360, '#0b141f');
+
+    // ground
+    const gy = state.groundY;
+    ctx.fillStyle = '#070a0e';
+    ctx.fillRect(0, gy, W, H-gy);
+
+    // ground highlight
+    ctx.globalAlpha = 0.25;
+    ctx.fillStyle = '#f2c26b';
+    ctx.fillRect(0, gy-2, W, 2);
+    ctx.globalAlpha = 1;
+
+    // suns
+    for(const s of state.suns){
+      ctx.save();
+      ctx.translate(s.x, s.y);
+      const rg = ctx.createRadialGradient(0,0,2, 0,0, 18);
+      rg.addColorStop(0, 'rgba(242,194,107,.95)');
+      rg.addColorStop(0.55,'rgba(214,155,79,.50)');
+      rg.addColorStop(1, 'rgba(214,155,79,0)');
+      ctx.fillStyle = rg;
+      ctx.beginPath();
+      ctx.arc(0,0,18,0,Math.PI*2);
+      ctx.fill();
+
+      ctx.fillStyle = 'rgba(242,194,107,.95)';
+      ctx.beginPath();
+      ctx.arc(0,0,s.r,0,Math.PI*2);
+      ctx.fill();
+      ctx.restore();
+    }
+
+    // obstacles
+    for(const o of state.obstacles){
+      drawObstacle(o);
+    }
+
+    // player
+    drawPlayer();
+
+    // particles
+    for(const p of state.particles){
+      const t = p.life / p.life0;
+      const a = p.alpha * (0.25 + 0.75*t);
+      ctx.globalAlpha = a;
+      if(p.col === 'sun'){
+        ctx.fillStyle = 'rgba(242,194,107,.95)';
+      } else {
+        ctx.fillStyle = 'rgba(255,255,255,.8)';
+      }
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.sz, 0, Math.PI*2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+
+    // vignette
+    ctx.globalAlpha = 0.55;
+    const vg = ctx.createRadialGradient(W*0.5,H*0.45, 120, W*0.5,H*0.45, 680);
+    vg.addColorStop(0, 'rgba(0,0,0,0)');
+    vg.addColorStop(1, 'rgba(0,0,0,.85)');
+    ctx.fillStyle = vg;
+    ctx.fillRect(0,0,W,H);
+    ctx.globalAlpha = 1;
+
+    ctx.restore();
+  }
+
+  function drawSunrise(){
+    const cx = W*0.55;
+    const cy = H*0.78;
+    const R = 280;
+    const grad = ctx.createRadialGradient(cx, cy, 30, cx, cy, R);
+    grad.addColorStop(0, 'rgba(242,194,107,.35)');
+    grad.addColorStop(0.55,'rgba(214,155,79,.18)');
+    grad.addColorStop(1, 'rgba(214,155,79,0)');
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.arc(cx, cy, R, 0, Math.PI*2);
+    ctx.fill();
+
+    // half sun
+    ctx.fillStyle = 'rgba(214,155,79,.42)';
+    ctx.beginPath();
+    ctx.arc(cx, cy, 170, Math.PI, 0);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.globalAlpha = 0.4;
+    ctx.fillStyle = 'rgba(242,194,107,.5)';
+    ctx.beginPath();
+    ctx.arc(cx, cy, 140, Math.PI, 0);
+    ctx.closePath();
+    ctx.fill();
+    ctx.globalAlpha = 1;
+  }
+
+  function drawSkyline(parallax, alpha, baseY, color){
+    const xoff = -(state.scrollX*120*parallax) % 420;
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = color;
+
+    for(let i=-2;i<6;i++){
+      const x = xoff + i*420;
+      // cluster
+      ctx.fillRect(x+20, baseY-90, 60, 90);
+      ctx.fillRect(x+90, baseY-140, 50, 140);
+      ctx.fillRect(x+150, baseY-70, 75, 70);
+      ctx.fillRect(x+235, baseY-120, 55, 120);
+      ctx.fillRect(x+300, baseY-160, 70, 160);
+
+      // spire
+      ctx.beginPath();
+      ctx.moveTo(x+115, baseY-160);
+      ctx.lineTo(x+128, baseY-210);
+      ctx.lineTo(x+141, baseY-160);
+      ctx.closePath();
+      ctx.fill();
+    }
+    ctx.restore();
+    ctx.globalAlpha = 1;
+  }
+
+  function drawObstacle(o){
+    const isDanger = true;
+    // base body
+    ctx.save();
+    ctx.translate(o.x, o.y);
+
+    const glow = ctx.createRadialGradient(o.w*0.5, o.h*0.2, 6, o.w*0.5, o.h*0.2, Math.max(o.w,o.h)*1.2);
+    glow.addColorStop(0, 'rgba(242,194,107,.10)');
+    glow.addColorStop(1, 'rgba(242,194,107,0)');
+    ctx.fillStyle = glow;
+    ctx.fillRect(-10,-20,o.w+20,o.h+40);
+
+    ctx.fillStyle = 'rgba(255,255,255,.06)';
+    ctx.fillRect(0,0,o.w,o.h);
+
+    ctx.strokeStyle = 'rgba(255,255,255,.16)';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(0,0,o.w,o.h);
+
+    // hazard hint
+    ctx.globalAlpha = 0.7;
+    ctx.fillStyle = 'rgba(255,90,107,.12)';
+    ctx.fillRect(2,2,o.w-4,6);
+    ctx.globalAlpha = 1;
+
+    ctx.restore();
+  }
+
+  function drawPlayer(){
+    const p = state.player;
+    const h = p.sliding ? 48 : p.h;
+    const y = p.y;
+
+    // shadow
+    ctx.globalAlpha = 0.35;
+    ctx.fillStyle = '#000';
+    ctx.beginPath();
+    ctx.ellipse(p.x + p.w*0.5, state.groundY+8, 34, 10, 0, 0, Math.PI*2);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+
+    // body
+    const body = ctx.createLinearGradient(p.x, y, p.x, y+h);
+    body.addColorStop(0, 'rgba(255,255,255,.10)');
+    body.addColorStop(1, 'rgba(255,255,255,.04)');
+    ctx.fillStyle = body;
+
+    ctx.beginPath();
+    const r = 12;
+    roundRect(ctx, p.x, y, p.w, h, r);
+    ctx.fill();
+
+    // outline
+    ctx.strokeStyle = 'rgba(242,194,107,.22)';
+    ctx.lineWidth = 2;
+    roundRect(ctx, p.x, y, p.w, h, r);
+    ctx.stroke();
+
+    // visor / mark
+    ctx.globalAlpha = 0.85;
+    ctx.fillStyle = 'rgba(242,194,107,.28)';
+    ctx.fillRect(p.x+10, y+14, p.w-20, 7);
+    ctx.globalAlpha = 1;
+
+    // invuln glow
+    if(p.invulnT > 0){
+      ctx.globalAlpha = 0.45;
+      const gg = ctx.createRadialGradient(p.x+p.w/2, y+h/2, 8, p.x+p.w/2, y+h/2, 68);
+      gg.addColorStop(0, 'rgba(242,194,107,.35)');
+      gg.addColorStop(1, 'rgba(242,194,107,0)');
+      ctx.fillStyle = gg;
+      ctx.beginPath();
+      ctx.arc(p.x+p.w/2, y+h/2, 68, 0, Math.PI*2);
+      ctx.fill();
+      ctx.globalAlpha = 1;
+    }
+  }
+
+  function roundRect(ctx, x, y, w, h, r){
+    r = Math.min(r, w/2, h/2);
+    ctx.beginPath();
+    ctx.moveTo(x+r, y);
+    ctx.arcTo(x+w, y, x+w, y+h, r);
+    ctx.arcTo(x+w, y+h, x, y+h, r);
+    ctx.arcTo(x, y+h, x, y, r);
+    ctx.arcTo(x, y, x+w, y, r);
+    ctx.closePath();
+  }
+
+  // ===== Boot =====
+  initSky();
+  resetRun(true);
+  requestAnimationFrame(update);
+})();
+</script>
+</body>
+</html>
